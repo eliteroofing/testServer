@@ -14,6 +14,10 @@ var methodOverride = require('method-override'); // simulate DELETE and PUT (exp
 var cors = require('cors');
 var expressValidator = require('express-validator');
 
+//Importing models
+var Teachers = require('./models/teachers.model');
+
+
 //JWT
 var jwt = require('jsonwebtoken');
 //var expressJwt = require('express-jwt');
@@ -46,6 +50,34 @@ app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Methods', 'DELETE, PUT');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
+});
+
+
+app.get('/get/teachers/all', (req, res) => {
+    Teachers.find({}, (error, data) => {
+        if (error) {
+            consoe.log(error);
+            res.json(error);
+        } else {
+            console.log(data);
+            res.json(data);
+        }
+    });
+});
+
+
+app.get('/search/teachers/criteria/:criteria', (req, res) => {
+    var criteria = req.params.criteria;
+    console.log(criteria);
+    Teachers.find({ $text: {$search: criteria}}, (error, data) => {
+        if (error) {
+            console.log(error);
+            res.json(error);
+        } else {
+            console.log(data);
+            res.json(data);
+        }
+    });
 });
 
 app.listen(app.get('port'), function () {

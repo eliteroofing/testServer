@@ -16,7 +16,7 @@ var expressValidator = require('express-validator');
 
 //Importing models
 var Teachers = require('./models/teachers.model');
-
+var Skills = require('./models/skills.model');
 
 //JWT
 var jwt = require('jsonwebtoken');
@@ -52,7 +52,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-
+//Gets all the teachers 
 app.get('/get/teachers/all', (req, res) => {
     Teachers.find({}, (error, data) => {
         if (error) {
@@ -65,16 +65,28 @@ app.get('/get/teachers/all', (req, res) => {
     });
 });
 
-
+//Gets the teachers by criteria
 app.get('/search/teachers/criteria/:criteria', (req, res) => {
     var criteria = req.params.criteria;
     console.log(criteria);
-    Teachers.find({ $text: {$search: criteria}}, (error, data) => {
+    Teachers.find({ $text: { $search: criteria } }, (error, data) => {
         if (error) {
             console.log(error);
             res.json(error);
         } else {
             console.log(data);
+            res.json(data);
+        }
+    });
+});
+
+
+//gets the skills
+app.get('/get/skills/all', (req, res) => {
+    Skills.find({}, (error, data) => {
+        if(error){
+            res.json(error);
+        }else{
             res.json(data);
         }
     });

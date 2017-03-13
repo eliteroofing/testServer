@@ -25,6 +25,6 @@
   "dependencies": {
     "express-jwt": "^5.1.0",
     "express-validator": "^3.0.0",
-    "jsonwebtoken": "^7.1.9"
+    "jsonwebtoken": "^7.3.0"
   }
 }

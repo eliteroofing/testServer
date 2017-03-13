@@ -18,9 +18,13 @@ var expressValidator = require('express-validator');
 var Teachers = require('./models/teachers.model');
 var Skills = require('./models/skills.model');
 
+
+//Modules
+var teachersModule = require('./modules/teachers.module');
+
 //JWT
 var jwt = require('jsonwebtoken');
-//var expressJwt = require('express-jwt');
+var expressJwt = require('express-jwt');
 var config = require('./config'); // get our config file
 
 //var router = express.Router();              // get an instance of the express Router
@@ -34,8 +38,8 @@ app.set('port', (process.env.PORT || 8080));
 app.use(express.static(__dirname + '/public'));
 
 
-//app.use(expressJwt({secret: config.secret}).unless({path: ['/login','/authenticate','/api/pipeline']}))
-//app.set('superSecret', config.secret); // secret variable
+app.use(expressJwt({ secret: config.secret }).unless({ path: ['/login'] }))
+app.set('superSecret', config.secret); // secret variable
 app.use(morgan('dev'));                                         // log every request to the console
 app.use(bodyParser.urlencoded({ 'extended': 'true' }));            // parse application/x-www-form-urlencoded
 app.use(bodyParser.json());                                     // parse application/json
@@ -69,7 +73,14 @@ app.get('/get/teachers/all', (req, res) => {
 app.get('/search/teachers/criteria/:criteria', (req, res) => {
     var criteria = req.params.criteria;
     console.log(criteria);
-    Teachers.find({ $text: { $search: criteria } }, (error, data) => {
+    Teachers.find({
+        $or: [
+            { "firstname": new RegExp(criteria, "i") },
+            { "lastname": new RegExp(criteria, "i") },
+            { "emails": new RegExp(criteria, "i") },
+            { "phone": new RegExp(criteria, "i") },
+        ]
+    }, (error, data) => {
         if (error) {
             console.log(error);
             res.json(error);
@@ -84,13 +95,70 @@ app.get('/search/teachers/criteria/:criteria', (req, res) => {
 //gets the skills
 app.get('/get/skills/all', (req, res) => {
     Skills.find({}, (error, data) => {
-        if(error){
+        if (error) {
             res.json(error);
-        }else{
+        } else {
             res.json(data);
         }
     });
 });
+
+//Search by skills
+app.get('/get/teachers/by/skills/:array', (req, res) => {
+    var skills = teachersModule.formatSkillArray(req.params.array);
+    Teachers.find({ "skills.name": { $all: skills } }, (error, data) => {
+        if (error) {
+            console.log(error);
+            res.send(error)
+        } else {
+            res.send(data)
+        }
+    });
+});
+
+//Search teachers by criteria and skills
+app.get('/get/teachers/by/skills/:criteria/:array', (req, res) => {
+    var skills = teachersModule.formatSkillArray(req.params.array);
+    var criteria = req.params.criteria
+    Teachers.find({
+        $or: [
+            { "firstname": new RegExp(criteria, "i") },
+            { "lastname": new RegExp(criteria, "i") },
+            { "emails": new RegExp(criteria, "i") },
+            { "phone": new RegExp(criteria, "i") },
+        ],
+        "skills.name": { $all: skills }
+    }, (error, data) => {
+        if (error) {
+            console.log(error);
+            res.send(error)
+        } else {
+            console.log(data, "both")
+            res.send(data)
+        }
+    });
+});
+
+app.post('/login', (req, res) => {
+
+    var email = req.body.email;
+    var password = req.body.password;
+
+    Teachers.count({ "email": email, "password": password }, (error, data) => {
+        if (error) {
+
+        } else {
+            console.log(data);
+            if (data > 0) {
+                var myToken = jwt.sign({ username: 'alexesca' }, config.secret)
+                res.json(myToken);
+            }else{
+                res.sendStatus(500);
+            }
+        }
+    });
+});
+
 
 app.listen(app.get('port'), function () {
     console.log('Node app is running on port', app.get('port'));

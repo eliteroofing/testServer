@@ -23,8 +23,8 @@ var Skills = require('./models/skills.model');
 var teachersModule = require('./modules/teachers.module');
 
 //JWT
-var jwt = require('jsonwebtoken');
-var expressJwt = require('express-jwt');
+//var jwt = require('jsonwebtoken');
+//var expressJwt = require('express-jwt');
 var config = require('./config'); // get our config file
 
 //var router = express.Router();              // get an instance of the express Router
@@ -34,12 +34,12 @@ mongoose.connect(config.database);
 
 
 //setting the dynamic port
-app.set('port', (process.env.PORT || 8080));
+app.set('port', (process.env.PORT || 8081));
 app.use(express.static(__dirname + '/public'));
 
 
-app.use(expressJwt({ secret: config.secret }).unless({ path: ['/login'] }))
-app.set('superSecret', config.secret); // secret variable
+//app.use(expressJwt({ secret: config.secret }).unless({ path: ['/login'] }))
+//app.set('superSecret', config.secret); // secret variable
 app.use(morgan('dev'));                                         // log every request to the console
 app.use(bodyParser.urlencoded({ 'extended': 'true' }));            // parse application/x-www-form-urlencoded
 app.use(bodyParser.json());                                     // parse application/json
@@ -69,28 +69,6 @@ app.get('/get/teachers/all', (req, res) => {
     });
 });
 
-//Gets the teachers by criteria
-app.get('/search/teachers/criteria/:criteria', (req, res) => {
-    var criteria = req.params.criteria;
-    console.log(criteria);
-    Teachers.find({
-        $or: [
-            { "firstname": new RegExp(criteria, "i") },
-            { "lastname": new RegExp(criteria, "i") },
-            { "emails": new RegExp(criteria, "i") },
-            { "phone": new RegExp(criteria, "i") },
-        ]
-    }, (error, data) => {
-        if (error) {
-            console.log(error);
-            res.json(error);
-        } else {
-            console.log(data);
-            res.json(data);
-        }
-    });
-});
-
 
 //gets the skills
 app.get('/get/skills/all', (req, res) => {
@@ -99,42 +77,6 @@ app.get('/get/skills/all', (req, res) => {
             res.json(error);
         } else {
             res.json(data);
-        }
-    });
-});
-
-//Search by skills
-app.get('/get/teachers/by/skills/:array', (req, res) => {
-    var skills = teachersModule.formatSkillArray(req.params.array);
-    Teachers.find({ "skills.name": { $all: skills } }, (error, data) => {
-        if (error) {
-            console.log(error);
-            res.send(error)
-        } else {
-            res.send(data)
-        }
-    });
-});
-
-//Search teachers by criteria and skills
-app.get('/get/teachers/by/skills/:criteria/:array', (req, res) => {
-    var skills = teachersModule.formatSkillArray(req.params.array);
-    var criteria = req.params.criteria
-    Teachers.find({
-        $or: [
-            { "firstname": new RegExp(criteria, "i") },
-            { "lastname": new RegExp(criteria, "i") },
-            { "emails": new RegExp(criteria, "i") },
-            { "phone": new RegExp(criteria, "i") },
-        ],
-        "skills.name": { $all: skills }
-    }, (error, data) => {
-        if (error) {
-            console.log(error);
-            res.send(error)
-        } else {
-            console.log(data, "both")
-            res.send(data)
         }
     });
 });

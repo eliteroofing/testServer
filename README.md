@@ -12,7 +12,7 @@ Run `npm install` (This will install all the dependencies).
 
 ## Run Server
 
-Run this script : `npm start server` (It will start the server on watch mode using Nodemon).
+Run this script : `npm start it` (It will start the server on watch mode using Nodemon).
 
 
 ## Go to http://localhost:8080
